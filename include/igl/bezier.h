@@ -41,6 +41,8 @@ namespace igl
     Eigen::PlainObjectBase<DerivedP> & P);
 }
 
+
+
 #ifndef IGL_STATIC_LIBRARY
 #  include "bezier.cpp"
 #endif
