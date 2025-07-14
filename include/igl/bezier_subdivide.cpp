@@ -4,7 +4,7 @@
 #include <vector>
 
 template <typename DerivedV>
-IGL_INLINE void bezier_subdivide( const Eigen::MatrixBase<DerivedV> & C, const typename DerivedV::Scalar t, Eigen::MatrixBase<DerivedV> & C1, Eigen::MatrixBase<DerivedV> & C2)
+IGL_INLINE void igl::bezier_subdivide( const Eigen::MatrixBase<DerivedV> & C, const typename DerivedV::Scalar t, Eigen::MatrixBase<DerivedV> & C1, Eigen::MatrixBase<DerivedV> & C2)
 {
   typedef typename DerivedV::Scalar Scalar;
   const auto& p0 = C.row(0);

@@ -50,7 +50,14 @@ namespace igl
     const Scalar & t1,
     Scalar & tmin,
     Scalar & tmax);
+
+  
+template<typename B>
+IGL_INLINE bool ray_box_intersect(const Eigen::Vector2<B>& origin, const Eigen::Vector2<B>& direction,
+                        const Eigen::Matrix2<B>& bounds);
 }
+
+
 #ifndef IGL_STATIC_LIBRARY
 #  include "ray_box_intersect.cpp"
 #endif

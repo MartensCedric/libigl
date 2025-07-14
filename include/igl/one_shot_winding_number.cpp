@@ -7,15 +7,12 @@
 
 using engine = std::mt19937;
 
-// constexpr double abs_tol = 1e-7;
-// constexpr double edge_tol = 1e-7;
-// constexpr double martens_tol = edge_tol; 
 
 template <
   typename DerivedA,
   typename DerivedX,
   typename DerivedW>
-IGL_INLINE void one_shot_winding_number(
+IGL_INLINE void igl::one_shot_winding_number(
   const Eigen::MatrixBase<DerivedA> & A,
   const Eigen::MatrixBase<DerivedX> & X,  
   Eigen::PlainObjectBase<DerivedW> & W)

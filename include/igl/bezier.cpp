@@ -33,6 +33,27 @@ IGL_INLINE void igl::bezier(
   P = Vtemp.row(0);
 }
 
+
+  template <typename DerivedV, typename DerivedP, typename DerivedT>
+  IGL_INLINE void igl::bezier(
+    const Eigen::MatrixBase<DerivedV> & V,
+    const typename DerivedV::Scalar t,
+    Eigen::PlainObjectBase<DerivedP> & P,
+    Eigen::PlainObjectBase<DerivedT> & T)
+    {
+      int degree = V.cols() - 1;
+      igl::bezier(V, t, P);
+
+      assert(degree == 3 && "Only cubic bezier curves are supported");
+
+      const auto& p0 = V.row(0);
+      const auto& p1 = V.row(1);
+      const auto& p2 = V.row(2);
+      const auto& p3 = V.row(3);
+
+      T = 3 * pow(1 - t, 2) * (p1 - p0) + 6 * (1 - t) * t * (p2 - p1) + 3 * pow(t, 2) * (p3 - p2);
+    }
+
 template <typename DerivedV, typename DerivedT, typename DerivedP>
 IGL_INLINE void igl::bezier(
   const Eigen::MatrixBase<DerivedV> & V,
