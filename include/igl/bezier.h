@@ -15,6 +15,15 @@ namespace igl
     const Eigen::MatrixBase<DerivedV> & V,
     const typename DerivedV::Scalar t,
     Eigen::PlainObjectBase<DerivedP> & P);
+
+
+ template <typename DerivedV, typename DerivedP, typename DerivedT>
+  IGL_INLINE void igl::bezier(
+    const Eigen::MatrixBase<DerivedV> & V,
+    const typename DerivedV::Scalar t,
+    Eigen::PlainObjectBase<DerivedP> & P,
+    Eigen::PlainObjectBase<DerivedT> & T);
+
   /// Evaluate a polynomial Bezier Curve at many parameter values.
   ///
   /// @param[in] V  #V by dim list of Bezier control points
