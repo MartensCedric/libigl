@@ -18,14 +18,14 @@ namespace igl
   
   template<typename DerivedQ, typename DerivedC, typename DerivedR, typename DerivedW>
   IGL_INLINE void one_shot_winding_number_cubic_bezier(
-    const Eigen::MatrixBase<DerivedQ>& Q,
+    const std::vector<Eigen::MatrixBase<DerivedQ>>& Q,
     const Eigen::MatrixBase<DerivedC>& C,
-    Eigen::MatrixBase<DerivedW>& W);
+    Eigen::PlainObjectBase<DerivedW>& W);
 
 }
 
 #ifndef IGL_STATIC_LIBRARY
-  #include "one_shot_winding_number.cpp"
+#include "one_shot_winding_number.h"
 #endif
 
 #endif
