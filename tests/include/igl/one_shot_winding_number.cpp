@@ -39,10 +39,9 @@ TEST_CASE("one_shot_winding_number: cubic bezier", "[igl]")
 {
   Eigen::MatrixXd C(4,2);
   C.row(0) = Eigen::RowVector2d(0.0, 0.0);
-
-  C.row(0) = Eigen::RowVector2d(1.0, 0.0);
-  C.row(0) = Eigen::RowVector2d(1.0, 1.0);
-  C.row(0) = Eigen::RowVector2d(1.0, 0.0);
+  C.row(1) = Eigen::RowVector2d(1.0, 0.0);
+  C.row(2) = Eigen::RowVector2d(1.0, 1.0);
+  C.row(3) = Eigen::RowVector2d(1.0, 0.0);
   
 
   const auto &p0 = C.row(0);
@@ -66,9 +65,11 @@ TEST_CASE("one_shot_winding_number: cubic bezier", "[igl]")
 
   
 
-  auto [ts_sq, normals] = igl::bezier_clip(Q.row(0).transpose(), dir, C, 1e-8);
+  Eigen::VectorXd ts_sq;
+  Eigen::MatrixXd normals;
+  igl::bezier_clip(Q.row(0), dir, C, 1e-8, ts_sq, normals);
 
-  std::vector<int> sign(ts_sq.size());
+  std::vector<int> sign(ts_sq.rows());
   for (int k = 0; k < normals.rows(); k++)
   {
     bool same_dir = normals.row(k).dot(dir) > 0.0;
@@ -77,4 +78,10 @@ TEST_CASE("one_shot_winding_number: cubic bezier", "[igl]")
 
   Eigen::VectorXi S = Eigen::Map<Eigen::VectorXi, Eigen::Unaligned>(sign.data(), sign.size());
   Eigen::VectorXd T_sq = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(ts_sq.data(), ts_sq.size());
+
+  Eigen::VectorXd W(10);
+  Eigen::Matrix2d endpoints;
+  endpoints.row(0) = p0;
+  endpoints.row(1) = p3;
+  igl::one_shot_winding_number(Q, endpoints, T_sq, S, std::optional<Eigen::Matrix2d>(bounds), W);
 }
