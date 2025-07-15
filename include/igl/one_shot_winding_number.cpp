@@ -5,6 +5,7 @@
 #include "PI.h"
 #include <vector>
 #include <cassert>
+#include <optional>
 #include <random>
 
 template <
@@ -26,41 +27,22 @@ IGL_INLINE void igl::one_shot_winding_number(
   }
 }
 
-template <typename DerivedQ, typename DerivedC, typename DerivedR, typename DerivedW>
-IGL_INLINE void igl::one_shot_winding_number_cubic_bezier(
-    Eigen::MatrixBase<DerivedQ> &Q,
-    const Eigen::MatrixBase<DerivedC> &C,
+template <typename DerivedQ, typename DerivedE, typename DerivedT, typename DerivedS, typename DerivedW>
+IGL_INLINE void igl::one_shot_winding_number(
+    const Eigen::MatrixBase<DerivedQ> &Q,
+    const Eigen::Matrix2<DerivedQ>& E,
+    const Eigen::VectorX<DerivedT> & T_sq,
+    const Eigen::VectorX<DerivedS> & S,
+    const std::optional<Eigen::Matrix2<typename DerivedE::Scalar>>& bounds_opt,
     Eigen::PlainObjectBase<DerivedW> &W)
 {
-  int output_size = Q.rows();
-  assert(output_size >= 2 && "A ray needs at least two points");
-
-  W.resize(output_size);
+  assert(T_sq.rows() == S.rows());
   using Scalar = typename DerivedQ::Scalar;
-  Eigen::Vector2<Scalar> start_point = C.row(0);
-  Eigen::Vector2<Scalar> end_point = C.row(3);
+  Eigen::Vector2<Scalar> start_point = E.row(0);
+  Eigen::Vector2<Scalar> end_point = E.row(1);
 
   Eigen::Vector2<Scalar> dir = Q.row(1) - Q.row(0);
   dir.normalize();
-
-  Eigen::Matrix2<typename DerivedQ::Scalar> bounds;
-
-  const auto &p0 = C.row(0);
-  const auto &p1 = C.row(1);
-  const auto &p2 = C.row(2);
-  const auto &p3 = C.row(3);
-
-  bounds << p0.cwiseMin(p1).cwiseMin(p2).cwiseMin(p3),
-      p0.cwiseMax(p1).cwiseMax(p2).cwiseMax(p3);
-
-  auto [ts_sq, normals] = igl::bezier_clip(Q.row(0).transpose(), dir, C, 1e-8);
-
-  std::vector<int> sign(ts_sq.size());
-  for (int k = 0; k < normals.rows(); k++)
-  {
-    bool same_dir = normals.row(k).dot(dir) > 0.0;
-    sign[k] = same_dir ? 1 : -1;
-  }
 
   Eigen::Vector3<Scalar> n(0.0, 0.0, 1.0);
   Eigen::Vector3<Scalar> dir_3d(dir(0), dir(1), 0.0);
@@ -69,11 +51,16 @@ IGL_INLINE void igl::one_shot_winding_number_cubic_bezier(
   for (int i = 0; i < Q.rows(); ++i)
   {
     Eigen::Vector2<Scalar> q = Q.row(i);
-    bool is_inside_box = true;
-    if(bounds(0, 0) > q(0) || bounds(0, 1) < q(0) || bounds(1,0) > q(1) || bounds(1,1) < q(1))
-		    is_inside_box = false;
 
-    if (!is_inside_box)
+    bool do_linearization = false;
+    if(bounds_opt.has_value())
+    {
+      const Eigen::Matrix2<typename DerivedE::Scalar>& bounds = bounds_opt.value(); 
+      if(bounds(0, 0) > q(0) || bounds(0, 1) < q(0) || bounds(1,0) > q(1) || bounds(1,1) < q(1))
+		    do_linearization = true; 
+    }
+  
+    if (do_linearization)
     {
       // compute linearization
       Eigen::Vector2<Scalar> V0 = start_point - q;
@@ -82,7 +69,6 @@ IGL_INLINE void igl::one_shot_winding_number_cubic_bezier(
     }
     else
     {
-
       Eigen::Vector2<Scalar> dir_to_start = (start_point - q).normalized();
       Eigen::Vector2<Scalar> dir_to_end = (end_point - q).normalized();
 
@@ -107,11 +93,14 @@ IGL_INLINE void igl::one_shot_winding_number_cubic_bezier(
 
       Scalar current_t_sq = (q - first_q).squaredNorm();
       int chi = 0;
-      for (int k = 0; k < ts_sq.rows(); k++)
+      for (int k = 0; k < T_sq.rows(); k++)
       {
-        if (current_t_sq <= ts_sq(k))
+        if(k > 0)
+          assert(T_sq[k-1] <= T_sq[k] && "Intersection t-values must be sorted.");
+
+        if (current_t_sq <= T_sq(k))
         {
-          chi += sign[k];
+          chi += S(k);
         }
       }
 
@@ -135,6 +124,7 @@ IGL_INLINE void igl::one_shot_winding_number_cubic_bezier(
     }
   }
 }
+
 
 #ifdef IGL_STATIC_LIBRARY
 template void igl::one_shot_winding_number<Eigen::Matrix<double, -1, 2, 0, -1, 2>, Eigen::Matrix<int, -1, 2, 0, -1, 2>, Eigen::Matrix<double, -1, 1, 0, -1, 1>>(const Eigen::MatrixBase<Eigen::Matrix<double, -1, 2, 0, -1, 2>>  &, const Eigen::MatrixBase<Eigen::Matrix<int, -1, 2, 0, -1, 2>>  &, Eigen::PlainObjectBase<Eigen::Matrix<double, -1, 1, 0, -1, 1>> &);
