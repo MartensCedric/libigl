@@ -130,4 +130,7 @@ template bool igl::ray_box_intersect<Eigen::Matrix<double, 1, 3, 1, 1, 3>, Eigen
 template bool igl::ray_box_intersect<Eigen::Matrix<float, 3, 1, 0, 3, 1>, Eigen::Matrix<float, 3, 1, 0, 3, 1>, float>(Eigen::MatrixBase<Eigen::Matrix<float, 3, 1, 0, 3, 1>> const&, Eigen::MatrixBase<Eigen::Matrix<float, 3, 1, 0, 3, 1>> const&, Eigen::AlignedBox<float, 3> const&, float const&, float const&, float&, float&);
 template bool igl::ray_box_intersect<Eigen::Matrix<float, 1, 3, 1, 1, 3>, Eigen::Matrix<float, 1, 3, 1, 1, 3>, float>(Eigen::MatrixBase<Eigen::Matrix<float, 1, 3, 1, 1, 3> > const&, Eigen::MatrixBase<Eigen::Matrix<float, 1, 3, 1, 1, 3> > const&, Eigen::AlignedBox<float, 3> const&, float const&, float const&, float&, float&);
 template bool igl::ray_box_intersect<Eigen::Matrix<double, 1, 3, 1, 1, 3>, Eigen::Matrix<double, 1, 3, 1, 1, 3>, double>(Eigen::MatrixBase<Eigen::Matrix<double, 1, 3, 1, 1, 3> > const&, Eigen::MatrixBase<Eigen::Matrix<double, 1, 3, 1, 1, 3> > const&, Eigen::AlignedBox<double, 3> const&, double const&, double const&, double&, double&);
+
+template bool igl::ray_box_intersect<double>(const Eigen::Vector2<double>&, const Eigen::Vector2<double>&, const Eigen::Matrix2<double>&);
+template bool igl::ray_box_intersect<float>(const Eigen::Vector2<float>&, const Eigen::Vector2<float>&, const Eigen::Matrix2<float>&);
 #endif
