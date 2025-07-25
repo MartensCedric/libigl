@@ -52,9 +52,9 @@ namespace igl
     Scalar & tmax);
 
   
-template<typename B>
-IGL_INLINE bool ray_box_intersect(const Eigen::Vector2<B>& origin, const Eigen::Vector2<B>& direction,
-                        const Eigen::Matrix2<B>& bounds);
+template<typename Derivedsource, typename Deriveddir, typename Scalar>
+IGL_INLINE bool ray_box_intersect(const Eigen::Vector2<Derivedsource>& origin, const Eigen::Vector2<Deriveddir>& direction,
+                        const Eigen::Matrix2<Scalar>& bounds);
 }
 
 
