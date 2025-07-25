@@ -5,15 +5,20 @@
 #include "PlainMatrix.h"
 #include <cassert>
 
-template <typename DerivedQ, typename DerivedR, typename DerivedC, typename DerivedN, typename Scalar>
-IGL_INLINE void igl::bezier_clip(const Eigen::MatrixBase<DerivedQ> &origin, const Eigen::MatrixBase<DerivedR> &direction, const Eigen::MatrixBase<DerivedC> &control_points, Scalar tolerance, Eigen::VectorX<Scalar> &t_sq, Eigen::MatrixBase<DerivedN> &normals)
+template <typename DerivedQ, typename DerivedR, typename DerivedC, typename Scalar>
+IGL_INLINE void igl::bezier_clip(const Eigen::MatrixBase<DerivedQ> &origin, const Eigen::MatrixBase<DerivedR> &direction, const Eigen::MatrixBase<DerivedC> &control_points, Scalar tolerance, Eigen::VectorX<Scalar> &t_sq, Eigen::Matrix<Scalar, Eigen::Dynamic, 2> &normals)
 {
   igl::bezier_clip(origin, direction, control_points, 0.0, 1.0, tolerance, t_sq, normals);
 }
 
-template <typename DerivedQ, typename DerivedR, typename DerivedC, typename DerivedN, typename Scalar>
-IGL_INLINE void igl::bezier_clip(const Eigen::MatrixBase<DerivedQ> &origin, const Eigen::MatrixBase<DerivedR> &direction, const Eigen::MatrixBase<DerivedC> &control_points, Scalar t_min, Scalar t_max, Scalar tolerance, Eigen::VectorX<Scalar> &t_sq, Eigen::MatrixBase<DerivedN> &normals)
+template <typename DerivedQ, typename DerivedR, typename DerivedC, typename Scalar>
+IGL_INLINE void igl::bezier_clip(const Eigen::MatrixBase<DerivedQ> &origin, const Eigen::MatrixBase<DerivedR> &direction, const Eigen::MatrixBase<DerivedC> &control_points, Scalar t_min, Scalar t_max, Scalar tolerance, Eigen::VectorX<Scalar> &t_sq, Eigen::Matrix<Scalar, Eigen::Dynamic, 2> &normals)
 {
+  static_assert(DerivedQ::RowsAtCompileTime == 1 && DerivedQ::ColsAtCompileTime == 2, 
+              "Origin must be a row vector of size 1x2");
+  static_assert(DerivedR::RowsAtCompileTime == 1 && DerivedR::ColsAtCompileTime == 2, 
+              "Direction must be a row vector of size 1x2");
+
   Eigen::Matrix2<typename DerivedQ::Scalar> bounds;
 
   const auto &p0 = control_points.row(0);
@@ -24,9 +29,10 @@ IGL_INLINE void igl::bezier_clip(const Eigen::MatrixBase<DerivedQ> &origin, cons
   bounds << p0.cwiseMin(p1).cwiseMin(p2).cwiseMin(p3),
       p0.cwiseMax(p1).cwiseMax(p2).cwiseMax(p3);
 
-  // Check if ray intersects bounding box
-
-  if (!ray_box_intersect(origin, direction, bounds))
+  Eigen::Vector2<typename DerivedQ::Scalar> origin_col(origin(0), origin(1));
+  Eigen::Vector2<typename DerivedR::Scalar> direction_col(direction(0), direction(1));
+  
+  if (!ray_box_intersect(origin_col, direction_col, bounds))
   {
     return;
   }
@@ -39,8 +45,8 @@ IGL_INLINE void igl::bezier_clip(const Eigen::MatrixBase<DerivedQ> &origin, cons
   {
     Scalar t = (t_min + t_max) / 2.0;
 
-    Eigen::Vector2<Scalar> point;
-    Eigen::Vector2<Scalar> tangent;
+    Eigen::RowVector2<Scalar> point;
+    Eigen::RowVector2<Scalar> tangent;
 
     igl::bezier(control_points, t, point, tangent);
 
@@ -49,7 +55,7 @@ IGL_INLINE void igl::bezier_clip(const Eigen::MatrixBase<DerivedQ> &origin, cons
     normals.row(0) = normal;
 
     t_sq.resize(1);
-    t_sq.row(0) = (point - origin).norm();
+    t_sq(0) = (point - origin).norm();
 
     return;
   }
@@ -62,7 +68,7 @@ IGL_INLINE void igl::bezier_clip(const Eigen::MatrixBase<DerivedQ> &origin, cons
 
   // Recursively clip the left and right sub-curves
   Eigen::VectorX<Scalar> t_left, t_right;
-  Eigen::MatrixX<DerivedN> n_left, n_right;
+  Eigen::Matrix<Scalar, Eigen::Dynamic, 2> n_left, n_right;
 
   bezier_clip(origin, direction, control_points1, t_min, midT, tolerance, t_left, n_left);
   bezier_clip(origin, direction, control_points2, midT, t_max, tolerance, t_right, n_right);
@@ -86,7 +92,7 @@ IGL_INLINE void igl::bezier_clip(const Eigen::MatrixBase<DerivedQ> &origin, cons
   }
   else
   {
-    normals = Eigen::MatrixX<typename DerivedQ::Scalar>();
+    normals = Eigen::Matrix<Scalar, Eigen::Dynamic, 2>();
   }
 }
 
@@ -95,20 +101,18 @@ template void igl::bezier_clip<
     Eigen::Matrix<double, 1, 2, 1, 1, 2>,
     Eigen::Matrix<double, 1, 2, 1, 1, 2>,
     Eigen::Matrix<double, -1, -1>,
-    Eigen::Matrix<double, -1, -1>,
     double>(
     const Eigen::MatrixBase<Eigen::Matrix<double, 1, 2, 1, 1, 2>> &,
     const Eigen::MatrixBase<Eigen::Matrix<double, 1, 2, 1, 1, 2>> &,
     const Eigen::MatrixBase<Eigen::Matrix<double, -1, -1>> &,
     double,
     Eigen::VectorXd &,
-    Eigen::MatrixBase<Eigen::Matrix<double, -1, -1>> &);
+    Eigen::Matrix<double, Eigen::Dynamic, 2> &);
 
 template void igl::bezier_clip<
     Eigen::Matrix<double, 1, 2, 1, 1, 2>, 
     Eigen::Matrix<double, 1, 2, 1, 1, 2>,
     Eigen::Matrix<double, -1, -1>,
-    Eigen::Matrix<double, -1, -1>,
     double>(
     const Eigen::MatrixBase<Eigen::Matrix<double, 1, 2, 1, 1, 2>> &,
     const Eigen::MatrixBase<Eigen::Matrix<double, 1, 2, 1, 1, 2>> &,
@@ -117,5 +121,5 @@ template void igl::bezier_clip<
     double,
     double,
     Eigen::VectorXd &,
-    Eigen::MatrixBase<Eigen::Matrix<double, -1, -1>> &);
+    Eigen::Matrix<double, Eigen::Dynamic, 2> &);
 #endif

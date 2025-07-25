@@ -88,11 +88,11 @@ IGL_INLINE bool igl::ray_box_intersect(
     return igl::ray_box_intersect(origin, inv_dir, inv_dir_pad, box, t0, t1, tmin, tmax);
 }
 
-template<typename B>
-IGL_INLINE bool igl::ray_box_intersect(const Eigen::Vector2<B>& origin, const Eigen::Vector2<B>& direction,
-                        const Eigen::Matrix2<B>& bounds) {
-    double tMin = -std::numeric_limits<B>::infinity();
-    double tMax = std::numeric_limits<B>::infinity();
+template<typename Derivedsource, typename Deriveddir, typename Scalar>
+IGL_INLINE bool igl::ray_box_intersect(const Eigen::Vector2<Derivedsource>& origin, const Eigen::Vector2<Deriveddir>& direction,
+                        const Eigen::Matrix2<Scalar>& bounds) {
+    double tMin = -std::numeric_limits<Scalar>::infinity();
+    double tMax = std::numeric_limits<Scalar>::infinity();
     
     for (int i = 0; i < 2; ++i) {
         if (direction(i) == 0.0) {
@@ -103,9 +103,9 @@ IGL_INLINE bool igl::ray_box_intersect(const Eigen::Vector2<B>& origin, const Ei
             }
         } else {
             // Ray is not parallel to this axis
-            B invDir = 1.0 / direction(i);
-            B t1 = (bounds(i, 0) - origin(i)) * invDir;
-            B t2 = (bounds(i, 1) - origin(i)) * invDir;
+            Scalar invDir = 1.0 / direction(i);
+            Scalar t1 = (bounds(i, 0) - origin(i)) * invDir;
+            Scalar t2 = (bounds(i, 1) - origin(i)) * invDir;
 
             if (invDir < 0.0) {
                 swap(t1, t2);

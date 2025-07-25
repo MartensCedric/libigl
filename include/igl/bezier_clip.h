@@ -5,16 +5,16 @@
 #include <vector>
 namespace igl
 {
-  template<typename DerivedQ, typename DerivedR, typename DerivedC, typename DerivedN, typename Scalar>
+  template<typename DerivedQ, typename DerivedR, typename DerivedC, typename Scalar>
   void bezier_clip(
     const Eigen::MatrixBase<DerivedQ>& origin, 
     const Eigen::MatrixBase<DerivedR>& direction, 
     const Eigen::MatrixBase<DerivedC>& control_points, 
     Scalar tolerance, 
     Eigen::VectorX<Scalar>& t_sq, 
-    Eigen::MatrixBase<DerivedN>& normals);
+    Eigen::Matrix<Scalar, Eigen::Dynamic, 2>& normals);
 
-  template<typename DerivedQ, typename DerivedR, typename DerivedC, typename DerivedN, typename Scalar>
+  template<typename DerivedQ, typename DerivedR, typename DerivedC, typename Scalar>
   void bezier_clip(
     const Eigen::MatrixBase<DerivedQ>& origin, 
     const Eigen::MatrixBase<DerivedR>& direction, 
@@ -23,7 +23,7 @@ namespace igl
     Scalar t_max, 
     Scalar tolerance, 
     Eigen::VectorX<Scalar>& t_sq, 
-    Eigen::MatrixBase<DerivedN>& normals);
+    Eigen::Matrix<Scalar, Eigen::Dynamic, 2>& normals);
 }
 
 #ifndef IGL_STATIC_LIBRARY
