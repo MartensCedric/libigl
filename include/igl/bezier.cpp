@@ -33,26 +33,25 @@ IGL_INLINE void igl::bezier(
   P = Vtemp.row(0);
 }
 
+template <typename DerivedV, typename DerivedP, typename DerivedT>
+IGL_INLINE void igl::bezier(
+  const Eigen::MatrixBase<DerivedV> & V,
+  const typename DerivedV::Scalar t,
+  Eigen::PlainObjectBase<DerivedP> & P,
+  Eigen::PlainObjectBase<DerivedT> & T)
+  {
+    int degree = V.cols() - 1;
+    igl::bezier(V, t, P);
 
-  template <typename DerivedV, typename DerivedP, typename DerivedT>
-  IGL_INLINE void igl::bezier(
-    const Eigen::MatrixBase<DerivedV> & V,
-    const typename DerivedV::Scalar t,
-    Eigen::PlainObjectBase<DerivedP> & P,
-    Eigen::PlainObjectBase<DerivedT> & T)
-    {
-      int degree = V.cols() - 1;
-      igl::bezier(V, t, P);
+    assert(degree == 3 && "Only cubic bezier curves are supported");
 
-      assert(degree == 3 && "Only cubic bezier curves are supported");
+    const auto& p0 = V.row(0);
+    const auto& p1 = V.row(1);
+    const auto& p2 = V.row(2);
+    const auto& p3 = V.row(3);
 
-      const auto& p0 = V.row(0);
-      const auto& p1 = V.row(1);
-      const auto& p2 = V.row(2);
-      const auto& p3 = V.row(3);
-
-      T = 3 * pow(1 - t, 2) * (p1 - p0) + 6 * (1 - t) * t * (p2 - p1) + 3 * pow(t, 2) * (p3 - p2);
-    }
+    T = 3 * pow(1 - t, 2) * (p1 - p0) + 6 * (1 - t) * t * (p2 - p1) + 3 * pow(t, 2) * (p3 - p2);
+  }
 
 template <typename DerivedV, typename DerivedT, typename DerivedP>
 IGL_INLINE void igl::bezier(
@@ -93,4 +92,15 @@ IGL_INLINE void igl::bezier(
 template void igl::bezier<Eigen::Matrix<double, -1, -1, 0, -1, -1>, Eigen::Matrix<double, -1, 1, 0, -1, 1>, Eigen::Matrix<double, -1, -1, 0, -1, -1> >(std::vector<Eigen::Matrix<double, -1, -1, 0, -1, -1>, std::allocator<Eigen::Matrix<double, -1, -1, 0, -1, -1> > > const&, Eigen::MatrixBase<Eigen::Matrix<double, -1, 1, 0, -1, 1> > const&, Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1, 0, -1, -1> >&);
 template void igl::bezier<Eigen::Matrix<double, -1, -1, 0, -1, -1>, Eigen::Matrix<double, -1, 1, 0, -1, 1>, Eigen::Matrix<double, -1, -1, 0, -1, -1> >(Eigen::MatrixBase<Eigen::Matrix<double, -1, -1, 0, -1, -1> > const&, Eigen::MatrixBase<Eigen::Matrix<double, -1, 1, 0, -1, 1> > const&, Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1, 0, -1, -1> >&);
 template void igl::bezier<Eigen::Matrix<double, -1, -1, 0, -1, -1>, Eigen::Matrix<double, 1, -1, 1, 1, -1> >(Eigen::MatrixBase<Eigen::Matrix<double, -1, -1, 0, -1, -1> > const&, Eigen::Matrix<double, -1, -1, 0, -1, -1>::Scalar, Eigen::PlainObjectBase<Eigen::Matrix<double, 1, -1, 1, 1, -1> >&);
+
+template void igl::bezier<
+    Eigen::Matrix<double, -1, -1>,
+    Eigen::Matrix<double, -1, -1>,
+    Eigen::Matrix<double, -1, -1>
+>(
+    const Eigen::MatrixBase<Eigen::Matrix<double, -1, -1>>&,
+    double,
+    Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1>>&,
+    Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1>>&);
+
 #endif

@@ -7,6 +7,7 @@
 // obtain one at http://mozilla.org/MPL/2.0/.
 #include "ray_box_intersect.h"
 #include <array>
+#include <algorithm>
 #include <limits>
 #include <igl/matlab_format.h>
 #include <igl/increment_ulp.h>
@@ -91,9 +92,13 @@ IGL_INLINE bool igl::ray_box_intersect(
 template<typename Derivedsource, typename Deriveddir, typename Scalar>
 IGL_INLINE bool igl::ray_box_intersect(const Eigen::Vector2<Derivedsource>& origin, const Eigen::Vector2<Deriveddir>& direction,
                         const Eigen::Matrix2<Scalar>& bounds) {
-    double tMin = -std::numeric_limits<Scalar>::infinity();
-    double tMax = std::numeric_limits<Scalar>::infinity();
+    Scalar tMin = -std::numeric_limits<Scalar>::infinity();
+    Scalar tMax = std::numeric_limits<Scalar>::infinity();
     
+    static_assert(std::is_same<decltype(tMin), Scalar>::value && 
+                      std::is_same<decltype(tMax), Scalar>::value,
+                      "tMin and tMax must be of the same type as Scalar (t1/t2)");
+
     for (int i = 0; i < 2; ++i) {
         if (direction(i) == 0.0) {
             // Ray is parallel to this axis
@@ -108,11 +113,11 @@ IGL_INLINE bool igl::ray_box_intersect(const Eigen::Vector2<Derivedsource>& orig
             Scalar t2 = (bounds(i, 1) - origin(i)) * invDir;
 
             if (invDir < 0.0) {
-                swap(t1, t2);
+                std::swap(t1, t2);
             }
 
-            tMin = max(tMin, t1);
-            tMax = min(tMax, t2);
+            tMin = std::max(tMin, t1);
+            tMax = std::min(tMax, t2);
 
             if (tMin > tMax || tMax < 0) {
                 return false;
@@ -133,4 +138,5 @@ template bool igl::ray_box_intersect<Eigen::Matrix<double, 1, 3, 1, 1, 3>, Eigen
 
 template bool igl::ray_box_intersect<double>(const Eigen::Vector2<double>&, const Eigen::Vector2<double>&, const Eigen::Matrix2<double>&);
 template bool igl::ray_box_intersect<float>(const Eigen::Vector2<float>&, const Eigen::Vector2<float>&, const Eigen::Matrix2<float>&);
+
 #endif

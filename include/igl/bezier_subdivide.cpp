@@ -35,3 +35,10 @@ IGL_INLINE void igl::bezier_subdivide( const Eigen::MatrixBase<DerivedV> & C, co
   C2.row(3) = p3;
 }
 
+#ifdef IGL_STATIC_LIBRARY
+template void igl::bezier_subdivide<Eigen::Matrix<double, -1, -1>>(
+    const Eigen::MatrixBase<Eigen::Matrix<double, -1, -1>>&,
+    double,
+    Eigen::MatrixBase<Eigen::Matrix<double, -1, -1>>&,
+    Eigen::MatrixBase<Eigen::Matrix<double, -1, -1>>&);
+#endif
