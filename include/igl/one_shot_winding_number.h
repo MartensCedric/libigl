@@ -18,13 +18,15 @@ namespace igl
     Eigen::PlainObjectBase<DerivedW> & W);
 
   
-template <typename DerivedQ, typename DerivedE, typename DerivedT, typename DerivedS, typename DerivedW>
-IGL_INLINE void igl::one_shot_winding_number(
+  
+template <typename DerivedQ, typename DerivedE, typename DerivedT, typename DerivedS, typename DerivedB, typename DerivedW>
+IGL_INLINE void one_shot_winding_number(
     const Eigen::MatrixBase<DerivedQ> &Q,
-    const Eigen::Matrix2<DerivedQ>& E,
-    const Eigen::VectorX<DerivedT> & T_sq,
-    const Eigen::VectorX<DerivedS> & S,
-    const std::optional<Eigen::Matrix2<typename DerivedE::Scalar>>& bounds_opt,
+    const Eigen::MatrixBase<DerivedE>& E,
+    const Eigen::PlainObjectBase<DerivedT> & T_sq,
+    const Eigen::PlainObjectBase<DerivedS> & S,
+    const Eigen::MatrixBase<DerivedB>& bounds,
+    bool use_bounds,
     Eigen::PlainObjectBase<DerivedW> &W);
 
 }

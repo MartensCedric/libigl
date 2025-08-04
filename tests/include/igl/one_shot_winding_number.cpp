@@ -1,6 +1,8 @@
 #include <test_common.h>
 #include <igl/one_shot_winding_number.h>
+#include <igl/winding_number.h>
 #include <igl/bezier_clip.h>
+#include <igl/bezier.h>
 #include <iostream>
 
 TEST_CASE("one_shot_winding_number: Weighted Sum", "[igl]")
@@ -49,7 +51,7 @@ TEST_CASE("one_shot_winding_number: cubic bezier", "[igl]")
   const auto &p2 = C.row(2);
   const auto &p3 = C.row(3);
 
-  Eigen::Matrix2d bounds;
+  Eigen::MatrixXd bounds(2,2);
   bounds << p0.cwiseMin(p1).cwiseMin(p2).cwiseMin(p3),
       p0.cwiseMax(p1).cwiseMax(p2).cwiseMax(p3);
 
@@ -73,13 +75,50 @@ TEST_CASE("one_shot_winding_number: cubic bezier", "[igl]")
     sign[k] = same_dir ? 1 : -1;
   }
 
-  Eigen::VectorXi S = Eigen::Map<Eigen::VectorXi, Eigen::Unaligned>(sign.data(), sign.size());
-  Eigen::VectorXd T_sq = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(ts_sq.data(), ts_sq.size());
+  Eigen::MatrixXi S = Eigen::Map<Eigen::MatrixXi>(sign.data(), sign.size(), 1);
+  Eigen::MatrixXd T_sq = Eigen::Map<Eigen::MatrixXd>(ts_sq.data(), ts_sq.size(), 1);
 
-  Eigen::VectorXd W(10);
-  Eigen::Matrix2d endpoints;
+  Eigen::MatrixXd W(10, 1);
+  Eigen::MatrixXd endpoints(2,2);
   endpoints.row(0) = p0;
   endpoints.row(1) = p3;
 
-  //igl::one_shot_winding_number(Q, endpoints, T_sq, S, std::optional<Eigen::Matrix2d>(bounds), W);
+  igl::one_shot_winding_number(Q, endpoints, T_sq, S, bounds, true, W);
+  
+  Eigen::MatrixXd W_no_linear(10, 1);
+  igl::one_shot_winding_number(Q, endpoints, T_sq, S, bounds, false, W_no_linear);
+
+  test_common::assert_near(W, W_no_linear);
+
+
+  const int num_samples = 100;
+  Eigen::MatrixXd sampled_points(num_samples, 2);
+
+  for (int i = 0; i < num_samples; i++) {
+    double t = static_cast<double>(i) / (num_samples - 1);
+    Eigen::MatrixXd value;
+    igl::bezier(C, t, value);
+    sampled_points.row(i) = value;
+  }
+
+  Eigen::MatrixXi E(num_samples - 1, 2);
+  for (int i = 0; i < num_samples - 1; i++) {
+    E(i, 0) = i;
+    E(i, 1) = i + 1;
+  }
+
+  Eigen::MatrixXd W_direct(10, 1);
+  for (int i = 0; i < 10; i++) {
+    Eigen::Matrix<double, 1, 2> q_i =  Q.row(i).head<2>();
+    W_direct(i) = igl::winding_number(sampled_points, E, q_i);
+  }
+
+  test_common::assert_near(W, W_direct);
+
+
+  std::cout << "W: " << W << std::endl;
+  std::cout << "W_no_linear: " << W_no_linear << std::endl;
+  std::cout << "W_direct: " << W_direct << std::endl;
+
+  test_common::assert_eq(false, true);
 }
