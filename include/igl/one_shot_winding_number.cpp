@@ -27,13 +27,14 @@ IGL_INLINE void igl::one_shot_winding_number(
   }
 }
 
-template <typename DerivedQ, typename DerivedE, typename DerivedT, typename DerivedS, typename DerivedW>
+template <typename DerivedQ, typename DerivedE, typename DerivedT, typename DerivedS, typename DerivedB, typename DerivedW>
 IGL_INLINE void igl::one_shot_winding_number(
     const Eigen::MatrixBase<DerivedQ> &Q,
-    const Eigen::Matrix2<DerivedQ>& E,
-    const Eigen::VectorX<DerivedT> & T_sq,
-    const Eigen::VectorX<DerivedS> & S,
-    const std::optional<Eigen::Matrix2<typename DerivedE::Scalar>>& bounds_opt,
+    const Eigen::MatrixBase<DerivedE>& E,
+    const Eigen::PlainObjectBase<DerivedT> & T_sq,
+    const Eigen::PlainObjectBase<DerivedS> & S,
+    const Eigen::MatrixBase<DerivedB>& bounds,
+    bool use_bounds,
     Eigen::PlainObjectBase<DerivedW> &W)
 {
   assert(T_sq.rows() == S.rows());
@@ -53,19 +54,18 @@ IGL_INLINE void igl::one_shot_winding_number(
     Eigen::Vector2<Scalar> q = Q.row(i);
 
     bool do_linearization = false;
-    if(bounds_opt.has_value())
+    if (use_bounds)
     {
-      const Eigen::Matrix2<typename DerivedE::Scalar>& bounds = bounds_opt.value(); 
-      if(bounds(0, 0) > q(0) || bounds(0, 1) < q(0) || bounds(1,0) > q(1) || bounds(1,1) < q(1))
-		    do_linearization = true; 
+      if (bounds(0, 0) > q(0) || bounds(0, 1) < q(0) || bounds(1, 0) > q(1) || bounds(1, 1) < q(1))
+        do_linearization = true;
     }
-  
+
     if (do_linearization)
     {
       // compute linearization
       Eigen::Vector2<Scalar> V0 = start_point - q;
       Eigen::Vector2<Scalar> V1 = end_point - q;
-      W(i) = 0.5 * M_1_PI * std::acos(V0.normalize().dot(V1.normalize()));
+      W(i) = 0.5 * M_1_PI * std::acos(V0.normalized().dot(V1.normalized()));
     }
     else
     {
@@ -95,8 +95,8 @@ IGL_INLINE void igl::one_shot_winding_number(
       int chi = 0;
       for (int k = 0; k < T_sq.rows(); k++)
       {
-        if(k > 0)
-          assert(T_sq[k-1] <= T_sq[k] && "Intersection t-values must be sorted.");
+        if (k > 0)
+          assert(T_sq[k - 1] <= T_sq[k] && "Intersection t-values must be sorted.");
 
         if (current_t_sq <= T_sq(k))
         {
@@ -125,7 +125,21 @@ IGL_INLINE void igl::one_shot_winding_number(
   }
 }
 
-
 #ifdef IGL_STATIC_LIBRARY
-template void igl::one_shot_winding_number<Eigen::Matrix<double, -1, 2, 0, -1, 2>, Eigen::Matrix<int, -1, 2, 0, -1, 2>, Eigen::Matrix<double, -1, 1, 0, -1, 1>>(const Eigen::MatrixBase<Eigen::Matrix<double, -1, 2, 0, -1, 2>>  &, const Eigen::MatrixBase<Eigen::Matrix<int, -1, 2, 0, -1, 2>>  &, Eigen::PlainObjectBase<Eigen::Matrix<double, -1, 1, 0, -1, 1>> &);
+template void igl::one_shot_winding_number<Eigen::Matrix<double, -1, 2, 0, -1, 2>, Eigen::Matrix<int, -1, 2, 0, -1, 2>, Eigen::Matrix<double, -1, 1, 0, -1, 1>>(const Eigen::MatrixBase<Eigen::Matrix<double, -1, 2, 0, -1, 2>> &, const Eigen::MatrixBase<Eigen::Matrix<int, -1, 2, 0, -1, 2>> &, Eigen::PlainObjectBase<Eigen::Matrix<double, -1, 1, 0, -1, 1>> &);
+template void igl::one_shot_winding_number<
+    Eigen::Matrix<double, -1, -1, 0, -1, -1>, 
+    Eigen::Matrix<double, -1, -1, 0, -1, -1>, 
+    Eigen::Matrix<double, -1, -1, 0, -1, -1>,                                           
+    Eigen::Matrix<int, -1, -1, 0, -1, -1>,
+    Eigen::Matrix<double, -1, -1, 0, -1, -1>,
+    Eigen::Matrix<double, -1, -1, 0, -1, -1>
+    >(
+    const Eigen::MatrixBase<Eigen::Matrix<double, -1, -1, 0, -1, -1>> &,
+    const Eigen::MatrixBase<Eigen::Matrix<double, -1, -1, 0, -1, -1>> &,
+    const Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1, 0, -1, -1>> &,
+    const Eigen::PlainObjectBase<Eigen::Matrix<int, -1, -1, 0, -1, -1>> &,
+    const Eigen::MatrixBase<Eigen::Matrix<double, -1, -1, 0, -1, -1>> &,
+    bool,
+    Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1, 0, -1, -1>> &);
 #endif
