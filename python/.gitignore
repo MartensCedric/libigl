@@ -1,0 +1,6 @@
+build/
+igl/__init__.py
+igl/*.so
+igl/*.pyd
+igl/*.pyi
+__pycache__/
